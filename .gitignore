@@ -1,0 +1,16 @@
+#USELESS CRAP
+package-info.java
+/.classpath
+/.project
+/.settings
+
+##FILES
+javadoc.xml
+spigot-1.11.2.jar
+spigot-javadoc-1.11.2.jar
+
+##FOLDERS
+/bin/
+
+/com/
+/target/
