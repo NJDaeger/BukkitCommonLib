@@ -63,6 +63,6 @@ public @interface Cmd {
 	 * 
 	 * @return
 	 */
-	String[] aliases() default "";
+	String[] aliases() default {};
 
 }

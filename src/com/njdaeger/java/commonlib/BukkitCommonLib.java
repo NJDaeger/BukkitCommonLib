@@ -6,11 +6,9 @@ public class BukkitCommonLib {
 	
 	private static Plugin plugin;
 	
-	public BukkitCommonLib() {
-		
-	}
-	
 	/**
+	 * This should only be used in your onEnable.
+	 * 
 	 * Creates a new instance of the plugin for the BukkitCommonLib.
 	 * 
 	 * @param plugin Returns the plugin currently utilizing this library.
