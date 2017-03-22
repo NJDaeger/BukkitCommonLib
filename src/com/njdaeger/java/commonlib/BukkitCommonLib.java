@@ -14,7 +14,7 @@ public class BukkitCommonLib {
 	 * @param plugin Returns the plugin currently utilizing this library.
 	 */
 	public BukkitCommonLib(Plugin plugin) {
-		System.out.println("[" + plugin.getName() + "] BukkitCommandLib hooked");
+		System.out.println("[" + plugin.getName() + "] BukkitCommonLib hooked");
 		BukkitCommonLib.plugin = plugin;
 	}
 	

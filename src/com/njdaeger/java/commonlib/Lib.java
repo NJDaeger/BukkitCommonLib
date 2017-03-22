@@ -7,6 +7,8 @@ import org.bukkit.command.CommandMap;
 
 import com.njdaeger.java.commonlib.commands.BaseCommand;
 import com.njdaeger.java.commonlib.commands.CommandLib;
+import com.njdaeger.java.commonlib.commands2.CommandInfo;
+import com.njdaeger.java.commonlib.commands2.CommandReg;
 
 public class Lib {
 	
@@ -30,5 +32,13 @@ public class Lib {
 			e.printStackTrace();
 		}
 		return map;
+	}
+	
+	public static Lib addCommand(Object object) {
+		CommandReg reg = new CommandReg(object);
+		for (CommandInfo command : reg.commands.values()) {
+			getMap().register(BukkitCommonLib.getPlugin().getName(), new com.njdaeger.java.commonlib.commands2.BaseCommand(command));
+		}
+		return new Lib();
 	}
 }

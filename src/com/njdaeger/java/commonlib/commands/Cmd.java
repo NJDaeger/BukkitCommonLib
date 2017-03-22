@@ -11,7 +11,7 @@ public @interface Cmd {
 	 * 
 	 * @return
 	 */
-	String[] permissions() default "*";
+	String[] permissions() default {"*"};
 
 	/**
 	 * The maximum amount of arguments in the command before an error is thrown.
