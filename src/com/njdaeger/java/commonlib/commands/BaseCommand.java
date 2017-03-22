@@ -52,11 +52,14 @@ public class BaseCommand extends Command implements PluginIdentifiableCommand {
 	 * @param sndr Commandsender to check.
 	 * @return Returns true if the command cannot be executed.
 	 */
-	private boolean checkExecutor(CommandSender sndr) {
+	private boolean checkExecutor(CommandSender sender) {
 		List<Executor> executors = new ArrayList<Executor>();
-		boolean a = false;
-		boolean b = false;
-		boolean c = false;
+		for (Executor executor : command.getExecutor()) {
+			executors.add(executor);
+		}
+		boolean a = false; //This is true if the executor list allows players.
+		boolean b = false; //This is true if the executor list allows console.
+		boolean c = false; //This is true if the executor list allows blocks.
 		if (executors.contains(Executor.PLAYER)) {
 			a = true;
 		}
@@ -67,38 +70,38 @@ public class BaseCommand extends Command implements PluginIdentifiableCommand {
 			c = true;
 		}
 		if (a && !b && !c) { //Player only
-			if (!(sndr instanceof Player)) {
-				sndr.sendMessage(Error.PLAYER_ONLY.format());
+			if (!(sender instanceof Player)) {
+				sender.sendMessage(Error.PLAYER_ONLY.format());
 				return true;
 			}
 		}
 		if (!a && b && !c) { //Console only
-			if (!(sndr instanceof ConsoleCommandSender)) {
-				sndr.sendMessage(Error.CONSOLE_ONLY.format());
+			if (!(sender instanceof ConsoleCommandSender)) {
+				sender.sendMessage(Error.CONSOLE_ONLY.format());
 				return true;
 			}
 		}
 		if (!a && !b && c) { //Block only
-			if (!(sndr instanceof BlockCommandSender)) {
-				sndr.sendMessage(Error.BLOCK_ONLY.format());
+			if (!(sender instanceof BlockCommandSender)) {
+				sender.sendMessage(Error.BLOCK_ONLY.format());
 				return true;
 			}
 		}
 		if (a && b && !c) { //Player & console
-			if (sndr instanceof BlockCommandSender) {
-				sndr.sendMessage(Error.PLAYER_CONSOLE_ONLY.format());
+			if (sender instanceof BlockCommandSender) {
+				sender.sendMessage(Error.PLAYER_CONSOLE_ONLY.format());
 				return true;
 			}
 		}
 		if (a && !b && c) { //Player & block
-			if (sndr instanceof ConsoleCommandSender) {
-				sndr.sendMessage(Error.PLAYER_BLOCK_ONLY.format());
+			if (sender instanceof ConsoleCommandSender) {
+				sender.sendMessage(Error.PLAYER_BLOCK_ONLY.format());
 				return true;
 			}
 		}
 		if (!a && b && c) { //Console & block
-			if (sndr instanceof Player) {
-				sndr.sendMessage(Error.BLOCK_CONSOLE_ONLY.format());
+			if (sender instanceof Player) {
+				sender.sendMessage(Error.BLOCK_CONSOLE_ONLY.format());
 				return true;
 			}
 		}
