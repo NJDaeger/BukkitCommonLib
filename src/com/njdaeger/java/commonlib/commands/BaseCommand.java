@@ -1,6 +1,6 @@
 package com.njdaeger.java.commonlib.commands;
 
-import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -9,44 +9,24 @@ import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.command.PluginIdentifiableCommand;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
+import com.njdaeger.java.commonlib.BukkitCommonLib;
 import com.njdaeger.java.commonlib.Error;
 import com.njdaeger.java.commonlib.Holder;
 
-public class BaseCommand extends Command {
+public class BaseCommand extends Command implements PluginIdentifiableCommand {
+
+	private CommandInfo command;
 	
-	private CommandLib cmd;
-	private Method method;
-	private Cmd command;
-	
-	public BaseCommand(CommandLib cmmd) {
-		super(cmmd.getName());
-		try {
-			method = cmmd.getClass().getMethod("run", CommandSender.class, String.class, String[].class);
-		} catch (NoSuchMethodException | SecurityException e) {
-			e.printStackTrace();
-		}
-		this.cmd = cmmd;
-		command = this.method.getAnnotation(Cmd.class);
-		this.description = command.desc();
-		this.usageMessage = command.usage();
-		this.setAliases(Arrays.asList(command.aliases()));
-	}
-	
-	@Override
-	public boolean execute(CommandSender sender, String label, String[] args) {
-		if (Holder.hasPermission(sender, command.permissions())) {
-			if (checkExecutor(sender)) {
-				return true;
-			}
-			if (checkLength(sender, args)) {
-				return true;
-			}
-			return cmd.run(sender, label, args);
-		}
-		sender.sendMessage(Error.NO_PERMISSION.format());
-		return true;
+	public BaseCommand(CommandInfo command) {
+		super(command.getName());
+		this.command = command;
+		this.description = command.getDesc();
+		this.usageMessage = command.getUsage();
+		this.setAliases(Arrays.asList(command.getAliases()));
 	}
 	
 	/**
@@ -56,17 +36,16 @@ public class BaseCommand extends Command {
 	 * @return True if the argument count is invalid.
 	 */
 	private boolean checkLength(CommandSender sndr, String[] args) {
-		if (args.length > command.max() && command.max() > -1) {
+		if (args.length > command.getMax() && command.getMax() > -1) {
 			sndr.sendMessage(Error.TOO_MANY_ARGS.format());
 			return true;
 		}
-		if (args.length < command.min() && command.min() > -1) {
+		if (args.length < command.getMin() && command.getMin() > -1) {
 			sndr.sendMessage(Error.NOT_ENOUGH_ARGS.format());
 			return true;
 		}
 		return false;
 	}
-
 	
 	/**
 	 * Checks the executor of the command.
@@ -124,5 +103,34 @@ public class BaseCommand extends Command {
 			}
 		}
 		return false; //Anyone
+	}
+	
+	@Override
+	public boolean execute(CommandSender sender, String commandLabel, String[] args) {
+		if (!Holder.hasPermission(sender, command.getPermissions())) {
+			return true;
+		}
+		if (checkExecutor(sender)) {
+			return true;
+		}
+		if (checkLength(sender, args)) {
+			return true;
+		}
+		try {
+			command.getContained().getClass().getMethod(command.getName(), CommandSender.class, String.class, String[].class).invoke(command.getContained(), sender, commandLabel, args);
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
+				| NoSuchMethodException | SecurityException e) {
+			e.printStackTrace();
+		}
+		return true;
+	}
+	
+	public CommandInfo getCommandInfo() {
+		return command;
+	}
+
+	@Override
+	public Plugin getPlugin() {
+		return BukkitCommonLib.getPlugin();
 	}
 }

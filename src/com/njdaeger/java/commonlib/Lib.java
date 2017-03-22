@@ -6,15 +6,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
 
 import com.njdaeger.java.commonlib.commands.BaseCommand;
-import com.njdaeger.java.commonlib.commands.CommandLib;
-import com.njdaeger.java.commonlib.commands2.CommandInfo;
-import com.njdaeger.java.commonlib.commands2.CommandReg;
+import com.njdaeger.java.commonlib.commands.CommandInfo;
+import com.njdaeger.java.commonlib.commands.CommandReg;
 
 public class Lib {
-	
-	public static void addCommand(CommandLib command) {
-		getMap().register(BukkitCommonLib.getPlugin().getName(), new BaseCommand(command));
-	}
 	
 	/**
 	 * Gets the bukkit command map.
@@ -34,11 +29,20 @@ public class Lib {
 		return map;
 	}
 	
-	public static Lib addCommand(Object object) {
-		CommandReg reg = new CommandReg(object);
-		for (CommandInfo command : reg.commands.values()) {
-			getMap().register(BukkitCommonLib.getPlugin().getName(), new com.njdaeger.java.commonlib.commands2.BaseCommand(command));
+	/**
+	 * Grabs commands from a class. A class can have more than one command.
+	 * @param object
+	 */
+	public static void addCommand(Class<?> cls) {
+		CommandReg reg = null;
+		try {
+			reg = new CommandReg(cls.newInstance());
+		} catch (InstantiationException | IllegalAccessException e) {
+			e.printStackTrace();
 		}
-		return new Lib();
+		for (CommandInfo command : reg.commands.values()) {
+			System.out.println(command.getName());
+			Lib.getMap().register(BukkitCommonLib.getPlugin().getName(), new BaseCommand(command));
+		}
 	}
 }

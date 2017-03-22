@@ -1,39 +1,55 @@
-package com.njdaeger.java.commonlib.commands2;
+package com.njdaeger.java.commonlib.commands;
 
 import java.lang.reflect.Method;
-
-import com.njdaeger.java.commonlib.commands.Cmd;
-import com.njdaeger.java.commonlib.commands.Executor;
 
 public class CommandInfo {
 	
 	private Cmd command;
-	private String name;
+	private String name; 
 	private String desc;
 	private String usage;
-	private String[] aliases;
-	private String[] permissions;
+	private String[] aliases = null;
+	private String[] permissions = null;
 	private int min;
 	private int max;
 	private Executor[] executor;
 	private Method method;
+	private Object contained;
 	
 	/**
 	 * Generates the command information for the BaseCommand to register.
 	 * @param command The command the information is coming from.
 	 * @param mthds The method that contains the command.
+	 * @param contained The object the method is contained in.
 	 */
-	public CommandInfo(Cmd command, Method mthds) {
+	public CommandInfo(Cmd command, Method mthds, Object contained) {
 		this.setMethod(mthds);
 		this.command = command;
 		this.name = command.name();
 		this.desc = command.desc();
 		this.usage = command.usage();
 		this.aliases = command.aliases();
-		this.permissions = command.permissions();
+		//this.permissions = command.permissions();
 		this.min = command.min();
 		this.max = command.max();
 		this.executor = command.executor();
+		this.contained = contained;
+	}
+	
+	/**
+	 * Gets the object the command is contained in.
+	 * @return
+	 */
+	public Object getContained() {
+		return contained;
+	}
+	
+	/**
+	 * Sets the object the command is contained in.
+	 * @param contained
+	 */
+	public void setContained(Object contained) {
+		this.contained = contained;
 	}
 	
 	/**

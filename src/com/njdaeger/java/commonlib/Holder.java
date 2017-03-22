@@ -13,7 +13,7 @@ public class Holder {
 	public static boolean hasPermission(CommandSender sender, String... permissions) {
 		int i = 0;
 		for (String node : permissions) {
-			if (i > 1) {
+			if (i >= 1) {
 				return true;
 			}
 			if (sender.hasPermission(node) || sender.isOp()) {

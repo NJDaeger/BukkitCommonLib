@@ -1,9 +1,7 @@
-package com.njdaeger.java.commonlib.commands2;
+package com.njdaeger.java.commonlib.commands;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
-
-import com.njdaeger.java.commonlib.commands.Cmd;
 
 public class CommandReg {
 	
@@ -15,10 +13,9 @@ public class CommandReg {
 		this.object = object;
 		for (Method mthds : object.getClass().getMethods()) {
 			if (mthds.isAnnotationPresent(Cmd.class)) {
-				this.commandInfo = new CommandInfo(mthds.getAnnotation(Cmd.class), mthds);
+				this.commandInfo = new CommandInfo(mthds.getAnnotation(Cmd.class), mthds, object);
 				commands.put(commandInfo.getName(), commandInfo);
 			}
-			return;
 		}
 	}
 	
