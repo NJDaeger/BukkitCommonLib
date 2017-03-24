@@ -13,9 +13,12 @@ import org.bukkit.command.PluginIdentifiableCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
+import com.google.common.collect.Lists;
 import com.njdaeger.java.commonlib.BukkitCommonLib;
 import com.njdaeger.java.commonlib.Error;
 import com.njdaeger.java.commonlib.Holder;
+import com.njdaeger.java.commonlib.commands.completer.Completion;
+import com.njdaeger.java.commonlib.commands.completer.CompletionBuilder;
 
 public class BaseCommand extends Command implements PluginIdentifiableCommand {
 
@@ -49,7 +52,7 @@ public class BaseCommand extends Command implements PluginIdentifiableCommand {
 	
 	/**
 	 * Checks the executor of the command.
-	 * @param sndr Commandsender to check.
+	 * @param sender Commandsender to check.
 	 * @return Returns true if the command cannot be executed.
 	 */
 	private boolean checkExecutor(CommandSender sender) {
@@ -130,8 +133,7 @@ public class BaseCommand extends Command implements PluginIdentifiableCommand {
 	
 	@Override
 	public List<String> tabComplete(CommandSender sender, String alias, String[] args) throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		return super.tabComplete(sender, alias, args);
+		return this.onTabComplete(sender, alias, args);
 	}
 	
 	public CommandInfo getCommandInfo() {
@@ -141,5 +143,33 @@ public class BaseCommand extends Command implements PluginIdentifiableCommand {
 	@Override
 	public Plugin getPlugin() {
 		return BukkitCommonLib.getPlugin();
+	}
+
+	private List<String> onTabComplete(CommandSender sender, String alias, String[] args) {
+		sender.sendMessage("ye");
+	    List<String> sub = Lists.newArrayList();
+	    CompletionBuilder builder = new CompletionBuilder(command.getMethod());
+	    sender.sendMessage(builder.toString());
+		if (builder.getCompletions() != null) {
+		    for (Completion completion : builder.getCompletions()) {
+		        List<String> strings = Arrays.asList(completion.getCompletions());
+		        if (completion.getPrevious() != null) {
+		            if (args[completion.getLength()-1].equalsIgnoreCase(completion.getPrevious())) {
+                        for (String a : strings) {
+                            if (a.toLowerCase().startsWith(args[completion.getLength()-1])) sub.add(a);
+                        }
+                        return sub;
+                    }
+                    return null;
+                }
+		        if (args.length == completion.getLength()) {
+		            for (String a : strings) {
+		                if (a.toLowerCase().startsWith(args[completion.getLength()-1])) sub.add(a);
+                    }
+                    return sub;
+                }
+            }
+        }
+        return null;
 	}
 }

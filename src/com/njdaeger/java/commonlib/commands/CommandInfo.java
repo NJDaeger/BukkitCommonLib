@@ -29,7 +29,7 @@ public class CommandInfo {
 		this.desc = command.desc();
 		this.usage = command.usage();
 		this.aliases = command.aliases();
-		//this.permissions = command.permissions();
+		this.permissions = command.permissions();
 		this.min = command.min();
 		this.max = command.max();
 		this.executor = command.executor();
