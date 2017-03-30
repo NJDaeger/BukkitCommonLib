@@ -15,6 +15,7 @@ public class CommandInfo {
 	private Executor[] executor;
 	private Method method;
 	private Object contained;
+	private boolean completer;
 	
 	/**
 	 * Generates the command information for the BaseCommand to register.
@@ -34,6 +35,7 @@ public class CommandInfo {
 		this.max = command.max();
 		this.executor = command.executor();
 		this.contained = contained;
+		this.setCompletable(command.completer());
 	}
 	
 	/**
@@ -80,7 +82,7 @@ public class CommandInfo {
 	 * Get the allowed executors of the command.
 	 * @return The allowed executors.
 	 */
-	public Executor[] getExecutor() {
+	public Executor[] getExecutors() {
 		return executor;
 	}
 	
@@ -210,5 +212,20 @@ public class CommandInfo {
 	 */
 	public void setMethod(Method method) {
 		this.method = method;
+	}
+
+	/**
+	 * Checks if the command has a tab completion method.
+	 */
+	public boolean hasCompleter() {
+		return completer;
+	}
+
+	/**
+	 * Forces it to have a tab completion method. (It may not exist)
+	 * @param completer True gives it a tab completer, false does the opposite.
+	 */
+	public void setCompletable(boolean completer) {
+		this.completer = completer;
 	}
 }

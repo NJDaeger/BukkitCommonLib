@@ -4,6 +4,7 @@ import org.bukkit.plugin.Plugin;
 
 public class BukkitCommonLib {
 	
+	//The name of the host plugin.
 	private static Plugin plugin;
 	
 	/**
@@ -26,4 +27,17 @@ public class BukkitCommonLib {
 	public static Plugin getPlugin() {
 		return plugin;
 	}
+	
+	/**
+	 * Gets a list of all the registered tab completions through the BukkitCommonLib
+	 * 
+	 * @return A list of tab completions. 
+	 */
+	/*public static HashMap<String, Method> getCompletions() {
+		return completions;
+	}
+
+	public static HashMap<String, Class<?>> getCompletionClass() {
+		return completionclass;
+	}*/
 }

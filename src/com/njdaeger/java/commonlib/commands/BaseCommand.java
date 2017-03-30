@@ -1,6 +1,7 @@
 package com.njdaeger.java.commonlib.commands;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -13,17 +14,19 @@ import org.bukkit.command.PluginIdentifiableCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
-import com.google.common.collect.Lists;
 import com.njdaeger.java.commonlib.BukkitCommonLib;
 import com.njdaeger.java.commonlib.Error;
 import com.njdaeger.java.commonlib.Holder;
-import com.njdaeger.java.commonlib.commands.completer.Completion;
-import com.njdaeger.java.commonlib.commands.completer.CompletionBuilder;
+import com.njdaeger.java.commonlib.Lib;
 
 public class BaseCommand extends Command implements PluginIdentifiableCommand {
 
 	private CommandInfo command;
 	
+	/**
+	 * This is the Base register for the command. This transforms CommandInfo into a command.
+	 * @param command The command info being transformed
+	 */
 	public BaseCommand(CommandInfo command) {
 		super(command.getName());
 		this.command = command;
@@ -57,52 +60,43 @@ public class BaseCommand extends Command implements PluginIdentifiableCommand {
 	 */
 	private boolean checkExecutor(CommandSender sender) {
 		List<Executor> executors = new ArrayList<Executor>();
-		for (Executor executor : command.getExecutor()) {
+		for (Executor executor : command.getExecutors()) {
 			executors.add(executor);
 		}
-		boolean a = false; //This is true if the executor list allows players.
-		boolean b = false; //This is true if the executor list allows console.
-		boolean c = false; //This is true if the executor list allows blocks.
-		if (executors.contains(Executor.PLAYER)) {
-			a = true;
-		}
-		if (executors.contains(Executor.CONSOLE)) {
-			b = true;
-		}
-		if (executors.contains(Executor.BLOCK)) {
-			c = true;
-		}
-		if (a && !b && !c) { //Player only
+		boolean isPlayer = executors.contains(Executor.PLAYER); //This is true if the executor list allows players.
+		boolean isConsole = executors.contains(Executor.CONSOLE); //This is true if the executor list allows console.
+		boolean isBlock = executors.contains(Executor.BLOCK); //This is true if the executor list allows blocks.
+		if (isPlayer && !isConsole && !isBlock) { //Player only
 			if (!(sender instanceof Player)) {
 				sender.sendMessage(Error.PLAYER_ONLY.format());
 				return true;
 			}
 		}
-		if (!a && b && !c) { //Console only
+		if (!isPlayer && isConsole && !isBlock) { //Console only
 			if (!(sender instanceof ConsoleCommandSender)) {
 				sender.sendMessage(Error.CONSOLE_ONLY.format());
 				return true;
 			}
 		}
-		if (!a && !b && c) { //Block only
+		if (!isPlayer && !isConsole && isBlock) { //Block only
 			if (!(sender instanceof BlockCommandSender)) {
 				sender.sendMessage(Error.BLOCK_ONLY.format());
 				return true;
 			}
 		}
-		if (a && b && !c) { //Player & console
+		if (isPlayer && isConsole && !isBlock) { //Player & console
 			if (sender instanceof BlockCommandSender) {
 				sender.sendMessage(Error.PLAYER_CONSOLE_ONLY.format());
 				return true;
 			}
 		}
-		if (a && !b && c) { //Player & block
+		if (isPlayer && !isConsole && isBlock) { //Player & block
 			if (sender instanceof ConsoleCommandSender) {
 				sender.sendMessage(Error.PLAYER_BLOCK_ONLY.format());
 				return true;
 			}
 		}
-		if (!a && b && c) { //Console & block
+		if (!isPlayer && isConsole && isBlock) { //Console & block
 			if (sender instanceof Player) {
 				sender.sendMessage(Error.BLOCK_CONSOLE_ONLY.format());
 				return true;
@@ -113,7 +107,9 @@ public class BaseCommand extends Command implements PluginIdentifiableCommand {
 	
 	@Override
 	public boolean execute(CommandSender sender, String commandLabel, String[] args) {
+		sender.sendMessage(command.getPermissions());
 		if (!Holder.hasPermission(sender, command.getPermissions())) {
+			sender.sendMessage("ye");
 			return true;
 		}
 		if (checkExecutor(sender)) {
@@ -123,19 +119,33 @@ public class BaseCommand extends Command implements PluginIdentifiableCommand {
 			return true;
 		}
 		try {
-			command.getContained().getClass().getMethod(command.getName(), CommandSender.class, String.class, String[].class).invoke(command.getContained(), sender, commandLabel, args);
+			command.getMethod().invoke(command.getContained(), sender, commandLabel, args);
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
-				| NoSuchMethodException | SecurityException e) {
+				| SecurityException e) {
 			e.printStackTrace();
 		}
 		return true;
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<String> tabComplete(CommandSender sender, String alias, String[] args) throws IllegalArgumentException {
-		return this.onTabComplete(sender, alias, args);
+		if (command.hasCompleter()) {
+			Method completions = Lib.getCompletions().get(command.getName());
+			Class<?> cls = Lib.getCompletionClass().get(command.getName());
+			try {
+				return (List<String>) completions.invoke(cls.newInstance(), sender, alias, args);
+			} catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
 	}
 	
+	/**
+	 * Returns the command info of the command.
+	 * @return The command info.
+	 */
 	public CommandInfo getCommandInfo() {
 		return command;
 	}
@@ -143,33 +153,5 @@ public class BaseCommand extends Command implements PluginIdentifiableCommand {
 	@Override
 	public Plugin getPlugin() {
 		return BukkitCommonLib.getPlugin();
-	}
-
-	private List<String> onTabComplete(CommandSender sender, String alias, String[] args) {
-		sender.sendMessage("ye");
-	    List<String> sub = Lists.newArrayList();
-	    CompletionBuilder builder = new CompletionBuilder(command.getMethod());
-	    sender.sendMessage(builder.toString());
-		if (builder.getCompletions() != null) {
-		    for (Completion completion : builder.getCompletions()) {
-		        List<String> strings = Arrays.asList(completion.getCompletions());
-		        if (completion.getPrevious() != null) {
-		            if (args[completion.getLength()-1].equalsIgnoreCase(completion.getPrevious())) {
-                        for (String a : strings) {
-                            if (a.toLowerCase().startsWith(args[completion.getLength()-1])) sub.add(a);
-                        }
-                        return sub;
-                    }
-                    return null;
-                }
-		        if (args.length == completion.getLength()) {
-		            for (String a : strings) {
-		                if (a.toLowerCase().startsWith(args[completion.getLength()-1])) sub.add(a);
-                    }
-                    return sub;
-                }
-            }
-        }
-        return null;
 	}
 }

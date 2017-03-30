@@ -1,6 +1,8 @@
 package com.njdaeger.java.commonlib;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.HashMap;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
@@ -8,8 +10,13 @@ import org.bukkit.command.CommandMap;
 import com.njdaeger.java.commonlib.commands.BaseCommand;
 import com.njdaeger.java.commonlib.commands.CommandInfo;
 import com.njdaeger.java.commonlib.commands.CommandReg;
+import com.njdaeger.java.commonlib.commands.completer.TabComplete;
 
 public class Lib {
+	
+	//String is the command name and method is the tab completion method.
+	private static HashMap<String, Method> completions = new HashMap<>();
+	private static HashMap<String, Class<?>> completionclass = new HashMap<>();
 	
 	/**
 	 * Gets the bukkit command map.
@@ -31,7 +38,7 @@ public class Lib {
 	
 	/**
 	 * Grabs commands from a class. A class can have more than one command.
-	 * @param object
+	 * @param cls The class that contains the command(s)
 	 */
 	public static void addCommand(Class<?> cls) {
 		CommandReg reg = null;
@@ -44,5 +51,23 @@ public class Lib {
 			System.out.println(command.getName());
 			Lib.getMap().register(BukkitCommonLib.getPlugin().getName(), new BaseCommand(command));
 		}
+	}
+	
+	public static void addCompletion(Class<?> cls) {
+		for (Method method : cls.getMethods()) {
+			if (method.isAnnotationPresent(TabComplete.class)) {
+				String command = method.getAnnotation(TabComplete.class).value();
+				completionclass.put(command, cls);
+				completions.put(command, method);
+			}
+		}
+	}
+	
+	public static HashMap<String, Method> getCompletions() {
+		return completions;
+	}
+
+	public static HashMap<String, Class<?>> getCompletionClass() {
+		return completionclass;
 	}
 }

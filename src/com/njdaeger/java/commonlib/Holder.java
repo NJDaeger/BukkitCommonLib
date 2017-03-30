@@ -11,15 +11,19 @@ public class Holder {
 	 * @return True if the player has permission.
 	 */
 	public static boolean hasPermission(CommandSender sender, String... permissions) {
+		if (sender.isOp()) {
+			return true;
+		}
 		int i = 0;
 		for (String node : permissions) {
 			if (i >= 1) {
 				return true;
 			}
-			if (sender.hasPermission(node) || sender.isOp()) {
+			if (sender.hasPermission(node)) {
 				i++;
 				return true;
 			}
+			continue;
 		}
 		return false;
 	}

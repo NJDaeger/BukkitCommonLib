@@ -19,6 +19,11 @@ public @interface Cmd {
 	 * Default is -1 for no minimum amount.
 	 */
 	int min() default -1;
+	
+	/**
+	 * This tells the command handler that this command has a tab completion method registered.
+	 */
+	boolean completer() default false;
 
 	/**
 	 * Specifies who is able to do the command. Default is Executor.ALL so
